@@ -114,6 +114,16 @@
     transition: opacity .35s, visibility .35s, transform .35s;
   }
   .mobile-menu.open { opacity: 1; visibility: visible; transform: translateY(0); }
+  /* The close control must live inside the overlay: nav is in a lower stacking layer. */
+  .mobile-menu-close {
+    position: fixed; top: max(18px, env(safe-area-inset-top)); right: max(18px, env(safe-area-inset-right));
+    z-index: 1003; display: flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border: 1px solid rgba(255,255,255,.35);
+    border-radius: 50%; background: rgba(255,255,255,.08); color: #fff;
+    font: 300 30px/1 Arial, sans-serif; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-menu-close:active { background: rgba(255,255,255,.2); }
   .mobile-menu a {
     color: rgba(255,255,255,.85); text-decoration: none;
     font-family: 'Cormorant Garamond', serif;
@@ -1333,7 +1343,8 @@ body.destination-modal-open{overflow:hidden}
   </div>
 </nav>
 
-<div class="mobile-menu" id="mobileMenu">
+<div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <button class="mobile-menu-close" type="button" onclick="closeMobileMenu()" aria-label="メニューを閉じる">×</button>
   <a href="#about" onclick="closeMobileMenu()">東北海道について</a>
   <a href="#seasons" onclick="closeMobileMenu()">見どころ</a>
   <a href="#experiences" onclick="closeMobileMenu()">体験</a>
@@ -1812,14 +1823,23 @@ function toggleMobileMenu() {
   const menu = document.getElementById('mobileMenu');
   const btn = document.getElementById('navToggle');
   const isOpen = menu.classList.toggle('open');
+  menu.setAttribute('aria-hidden', String(!isOpen));
   btn.classList.toggle('open', isOpen);
+  btn.setAttribute('aria-expanded', String(isOpen));
   document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 function closeMobileMenu() {
-  document.getElementById('mobileMenu').classList.remove('open');
-  document.getElementById('navToggle').classList.remove('open');
+  const menu = document.getElementById('mobileMenu');
+  const btn = document.getElementById('navToggle');
+  menu.classList.remove('open');
+  menu.setAttribute('aria-hidden', 'true');
+  btn.classList.remove('open');
+  btn.setAttribute('aria-expanded', 'false');
   document.body.style.overflow = '';
 }
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeMobileMenu();
+});
 window.addEventListener('resize', () => {
   if (window.innerWidth > 900) closeMobileMenu();
 });
